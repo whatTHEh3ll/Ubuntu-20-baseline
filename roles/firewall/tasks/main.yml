@@ -1,0 +1,55 @@
+---
+
+- name: make firewall ouput directory 
+  file:
+    path: "/root/SYSTEM/FIREWALL"
+    state: directory
+    force: yes 
+   
+- name: set facts for firewall output directory  
+  set_fact: 
+    firewall_out: /root/SYSTEM/FIREWALL
+    cacheable: yes 
+
+- name: display firewall ouptut directory 
+  debug: 
+    msg: "{{ firewall_out }}"
+
+- include: ipset.yml tags=firewall,ipset
+- include: ufw.yml tags=firewall,ufw
+- include: iptables.yml tags=firewall,iptables
+- include: docker-firewall.yml tags=firewall,docker-firewall
+  
+- name: test status of both ufw and iptables
+  shell: systemctl list-unit-files --state=enabled | egrep "netfilter-persistent|ufw"
+  args:
+    chdir: "{{ firewall_out }}"
+  register: iptables_ufw
+
+- name: show status of iptables_ufw
+  debug:
+    msg: "{{ iptables_ufw.stdout }}"
+
+- name: write iptables_ufw output to file
+  copy:
+    content: "{{ iptables_ufw.stdout }}"
+    dest: "{{ firewall_out }}/iptables_ufw_test.txt"
+   
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+

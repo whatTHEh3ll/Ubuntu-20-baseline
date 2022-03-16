@@ -1,0 +1,57 @@
+---
+  
+- name: Ensure the locale exists
+  locale_gen:
+    name: en_US.UTF-8
+    state: present
+
+- name: "Check if debconf-utils related packages are installed"
+  package_facts:
+    manager: "auto"
+
+- name: install debconf-utils if not installed for localpurge configuration
+  apt:
+    name: 
+      - debconf-utils
+      - python3-apt
+    state: latest
+  when:
+     - "'debconf-utils' not in ansible_facts.packages"
+     - "'python3-apt' not in ansible_facts.packages"
+
+- name: install and configure localpeurge to remove unessacary locales
+  apt: 
+    name: localepurge 
+    state: latest
+
+- name: reconfigure localepurge with deb-conf
+  debconf:
+    name: localepurge
+    question: "{{ item.question }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.vtype }}"
+  loop:
+    - {question: 'localepurge/verbose', value: 'false', vtype: 'boolean'}
+    - {question: 'localepurge/none_selected', value: 'true', vtype: 'boolean'}
+    - {question: 'localepurge/mandelete', value: 'true', vtype: 'boolean'}
+    - {question: 'localepurge/nopurge', value: 'en_US.UTF-8', vtype: 'multiselect'}
+    - {question: 'localepurge/dontbothernew', value: 'true', vtype: 'boolean'}
+    - {question: 'localepurge/quickndirtycalc', value: 'false', vtype: 'boolean'}
+    - {question: 'localepurge/use-dpkg-feature', value: 'false', vtype: 'boolean'}
+    - {question: 'localepurge/showfreedspace', value: 'true', vtype: 'boolean'}
+
+- name: output locales to /root/SYSTEM/locales.txt
+  shell: locale > locales.txt
+  args:
+    chdir: /root/SYSTEM/ 
+    creates: locales.txt
+  
+   
+   
+   
+   
+    
+    
+    
+  
+

@@ -1,0 +1,69 @@
+---
+
+- name: install ipset and apply blocklist
+  
+  block:
+
+  - name: Install iptables packages
+    apt:
+      name: 
+        - ipset
+        - iptables
+        - iptables-persistent
+        - netfilter-persistent
+      state: latest 
+
+  - name: include ipset_vars from file
+    include_vars: 
+      file: vars/ipset_vars.yml  
+
+  - name: Download update-blacklist.sh script
+    get_url:
+      url: "{{ download_script_url }}"
+      dest: /usr/local/sbin/update-blacklist.sh
+      mode: '0750'
+
+  - name: Make directory {{ ipsets_confdir }}
+    file:
+      path: "{{ ipsets_confdir }}"
+      state: directory
+
+  - name: Download update-blacklist.conf (for documentation)
+    get_url:
+      url: https://raw.githubusercontent.com/trick77/ipset-blacklist/master/ipset-blacklist.conf
+      dest: "{{ ipsets_confdir }}/ipset-blacklist.conf.orig"
+
+  - name: Generate update-blacklist.conf
+    ansible.builtin.template:
+      src: update-blacklist.conf.j2
+      dest: "{{ ipsets_confdir }}/ipset-blacklist.conf"
+
+  - name: Configure crontab
+    copy:
+      dest: /etc/cron.d/update-blacklist
+      content: |
+        PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+        MAILTO=root
+        @reboot root /usr/local/sbin/update-blacklist.sh {{ ipsets_confdir }}/ipset-blacklist.conf
+        33 23 * * * root /usr/local/sbin/update-blacklist.sh {{ ipsets_confdir }}/ipset-blacklist.conf
+
+  - name: Activate blocklist
+    command: /usr/local/sbin/update-blacklist.sh {{ ipsets_confdir }}/ipset-blacklist.conf
+
+  # - name: acitvate cron job for /etc/cron.d/update-blacklist
+  #   cron:
+  #     name: update-blacklist
+  #     job: /usr/local/sbin/update-blacklist.sh {{ ipsets_confdir }}/ipset-blacklist.conf
+  #     minute: 33
+  #     hour: 23
+  #     day: "*"
+  #     weekday: "*"
+  #     month: "*"
+  #     special_time: reboot
+  #     user: root
+  #     state: present 
+  #     # cron_file: /etc/cron.d/update-blacklist
+
+  tags:
+    - firewall
+    - ipset  

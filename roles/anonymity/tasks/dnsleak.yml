@@ -1,0 +1,27 @@
+---
+
+- name: configure and setup dnsleaktest
+
+  block:
+
+  - name: 'copy dnsleaktest.sh into /usr/local/bin/'
+    template:
+      src: templates/dnsleaktest.j2
+      dest: /usr/local/bin/dnsleaktest
+      owner: "{{ user_name }}"
+      group: "{{ user_name }}"
+      mode: '0755'
+
+  - name: format dnsleak output output 
+    shell: "{{ item }}"
+    args:
+      chdir: /root/SYSTEM/
+      warn: no
+    with_items:
+      - dnsleaktest > RAW-dnsleaktest.txt
+      - cat RAW-dnsleaktest.txt | ansi2txt > DNSLEAKTEST.txt 
+      - srm -vz RAW-dnsleaktest.txt
+   
+  tags:
+    - anonymity
+    - dnsleak 

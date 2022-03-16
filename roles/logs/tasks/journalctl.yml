@@ -1,0 +1,31 @@
+---
+
+- name: configure journalctl
+
+  block:
+
+  # - name: install systemd-journal-remote
+  #   apt:
+  #     name: systemd-journal-remote
+  #     state: present 
+
+  - name: create /var/log/journal
+    file:
+      path: /var/log/journal
+      state: directory
+      owner: root
+      group: root 
+      mode: '0644'
+
+  - name: make journalctl persistant
+    shell: journalctl --flush
+
+  - name: set journalctl rotation
+    command: journalctl --rotate
+
+  - name: setup journalctl keys 
+    command: journalctl --setup-keys
+
+  tags:
+    - logs
+    - journalctl  

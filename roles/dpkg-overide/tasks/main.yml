@@ -1,0 +1,11 @@
+---
+- name: make sure that only users in the sudo group are able to run the su command in order to act as (or become) root
+  shell: dpkg-statoverride --update --add root sudo 4750 /bin/su
+  args:
+    warn: no
+  register: dpkg_overide
+
+- name: show output of dpkg overide from previous task  
+  debug: var=dpkg_overid
+ 
+  

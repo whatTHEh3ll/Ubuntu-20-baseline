@@ -1,0 +1,49 @@
+---
+
+- block:
+
+  - name: 'ruby : add rvm repository'
+    apt_repository:
+      repo: 'ppa:rael-gc/rvm'
+      state: present
+      update_cache: yes
+
+  - name: 'ruby : install rvm'
+    apt:
+      name: rvm
+      state: present
+
+  - name: 'ruby : install ruby 2.7.0'
+    shell: '/bin/bash -lc "rvm install ruby-3.0.0"'
+    register: shell_output
+  - debug: msg={{ shell_output.stdout }}
+
+  - name: 'ruby : default to ruby 2.7.0'
+    shell: '/bin/bash -lc "rvm --default use ruby-3.0.0"'
+    register: shell_output
+  
+  - debug: msg={{ shell_output.stdout }}
+
+  - name: 'ruby : add non root user to rvm group.'
+    user:
+      name: "{{ user_name }}"
+      groups: rvm
+      append: yes
+
+  - name: 'ruby: souce rvm'
+    shell: '/bin/bash -lc "source /etc/profile.d/rvm.sh"'
+    args:
+      chdir: /home/{{ user_name }}
+
+  - name: 'ruby : add ruby to /etc/enviroment'
+    lineinfile:  
+      path: /etc/environment
+      state: present
+      backrefs: yes
+      regexp: 'PATH=(["]*)((?!.*?/usr/share/rvm/rubies/ruby-3.0.0/bin/ruby).*?)(["]*)$'
+      line: 'PATH=\1\2:/usr/share/rvm/rubies/ruby-2.7.0/bin/ruby\3'
+
+  tags:
+    - common
+    - ruby
+    

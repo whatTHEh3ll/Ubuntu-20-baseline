@@ -1,0 +1,12 @@
+---
+download_script_url: https://raw.githubusercontent.com/trick77/ipset-blacklist/master/update-blacklist.sh
+ipsets_confdir: /etc/ipset-blacklist
+ipsets_blacklist_name: blacklist
+ip_blacklist_restore: ip-blacklist.restore
+ip_blacklist: ip-blacklist.list
+verbose: "no"
+force: "yes"
+blacklists:
+  - https://www.dshield.org/block.txt
+  - https://lists.blocklist.de/lists/ssh.txt
+maxelements: 131072

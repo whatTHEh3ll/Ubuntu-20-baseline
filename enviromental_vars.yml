@@ -1,0 +1,23 @@
+---
+
+- hosts: vagrant  
+  vars:
+    local_shell:  "{{ lookup('env','SHELL') }}"
+  gather_facts: true
+  
+  tasks:
+    
+    - name: Printing the environment​ variable in Ansible
+      debug:
+        msg: "{{ lookup('env','HOME') }}"
+
+    - name: Multiple environment​ variables in a single line ansible task
+      debug:
+        msg: "{{ lookup('env','USER','HOME','SHELL') }}"
+
+    - debug:
+        msg: "{{ local_shell }}"
+
+    - name: Printing all the environment​ variables in Ansible
+      debug:
+        msg: "{{ ansible_env }}"

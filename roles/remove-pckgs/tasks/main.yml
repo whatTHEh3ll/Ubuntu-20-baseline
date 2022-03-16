@@ -1,0 +1,56 @@
+---
+
+- name: remove uneeded packages
+  apt:
+    name: 
+      - apport
+      - mailutils
+      - at
+      - avahi-utils 
+      - cups
+      - nfs-kernel-server
+      - nfs-common
+      - portmap
+      - rpcbind
+      - autofs
+      - snmp
+      - telnetd
+      - inetutils-telnet
+      - telnetd-ssl 
+      - whoopsie
+      - zeitgeist-core 
+      - zeitgeist-datahub
+      - python-zeitgeist
+      - rhythmbox-plugin-zeitgeist
+      - zeitgeist
+      - rsh-redone-server
+      - telnetd rsh-server
+      - tftpd-hpa 
+      - atftpd
+      - tftpd
+      - yp-tools
+      - nis
+      - xinetd 
+      - postfix 
+    state: absent
+    purge: yes 
+    autoremove: yes
+    autoclean: yes
+  register: result
+  
+- name: set facts for pkg_removed
+  set_fact:
+    pkg_removed: "{{ result.stdout_lines|
+                  select('regex', '^Removing (.*)$')|
+                  map('regex_replace', '^(.*?) (.*?) (.*)$', '\\2')|
+                  list }}"
+  
+- name: show removed packages
+  debug:
+    var: pkg_removed
+
+- name: write to removed packages to file 
+  copy:
+    content: "{{ pkg_removed | to_nice_json }}"
+    dest: "/root/SYSTEM/PACKAGES_REMOVED.json"
+

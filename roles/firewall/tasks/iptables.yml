@@ -1,0 +1,118 @@
+---
+
+- name: configure iptables 
+
+  block:  
+
+  - name: "Check if iptable related packages are installed"
+    package_facts:
+      manager: "auto"
+
+  - name: checking iptables packages for iptables configuration
+    apt:
+      name: 
+        - iptables
+        - iptables-persistent
+        - netfilter-persistent
+      state: latest 
+    when: 
+      - "'iptables' not in ansible_facts.packages"
+      - "'iptables-persistent' not in ansible_facts.packages"
+      - "'netfilter-persistent' not in ansible_facts.packages"
+
+  - name: Drop invalid packets
+    shell: /sbin/iptables -t mangle -A PREROUTING -m conntrack --ctstate INVALID -j DROP  
+
+  - name: Drop TCP packets that are new and are not SYN 
+    shell: /sbin/iptables -t mangle -A PREROUTING -p tcp ! --syn -m conntrack --ctstate NEW -j DROP 
+
+  - name: Drop SYN packets with suspicious MSS value
+    shell: /sbin/iptables -t mangle -A PREROUTING -p tcp -m conntrack --ctstate NEW -m tcpmss ! --mss 536:65535 -j DROP 
+
+  - name: Block packets with bogus TCP flags
+    shell: "{{ item }}"
+    with_items:
+      - /sbin/iptables -t mangle -A PREROUTING -p tcp --tcp-flags FIN,SYN,RST,PSH,ACK,URG NONE -j DROP 
+      - /sbin/iptables -t mangle -A PREROUTING -p tcp --tcp-flags FIN,SYN FIN,SYN -j DROP 
+      - /sbin/iptables -t mangle -A PREROUTING -p tcp --tcp-flags SYN,RST SYN,RST -j DROP 
+      - /sbin/iptables -t mangle -A PREROUTING -p tcp --tcp-flags FIN,ACK FIN -j DROP 
+      - /sbin/iptables -t mangle -A PREROUTING -p tcp --tcp-flags ACK,URG URG -j DROP 
+      - /sbin/iptables -t mangle -A PREROUTING -p tcp --tcp-flags ACK,FIN FIN -j DROP 
+      - /sbin/iptables -t mangle -A PREROUTING -p tcp --tcp-flags ACK,PSH PSH -j DROP 
+      - /sbin/iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL ALL -j DROP 
+      - /sbin/iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL NONE -j DROP
+      - /sbin/iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP 
+      - /sbin/iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL SYN,FIN,PSH,URG -j DROP 
+      - /sbin/iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL SYN,RST,ACK,FIN,URG -j DROP 
+      - /sbin/iptables -t mangle -A PREROUTING -s 127.0.0.0/8 ! -i lo -j DROP  
+
+  - name: Drop ICMP 
+    shell: /sbin/iptables -t mangle -A PREROUTING -p icmp -j DROP 
+
+  - name: Drop fragments in all chains
+    shell: /sbin/iptables -t mangle -A PREROUTING -f -j DROP 
+
+  - name: Limit connections per source IP
+    shell: /sbin/iptables -A INPUT -p tcp -m connlimit --connlimit-above 111 -j REJECT --reject-with tcp-reset  
+
+  - name: Limit RST packets
+    shell: "{{ item }}"
+    with_items:
+      - /sbin/iptables -A INPUT -p tcp --tcp-flags RST RST -m limit --limit 2/s --limit-burst 2 -j ACCEPT 
+      - /sbin/iptables -A INPUT -p tcp --tcp-flags RST RST -j DROP 
+
+  - name: Limit new TCP connections per second per source IP
+    shell: "{{ item }}"
+    with_items:
+      - /sbin/iptables -A INPUT -p tcp -m conntrack --ctstate NEW -m limit --limit 60/s --limit-burst 20 -j ACCEPT 
+      - /sbin/iptables -A INPUT -p tcp -m conntrack --ctstate NEW -j DROP 
+
+  - name: SSH brute-force protection
+    shell: "{{ item }}"
+    with_items:
+      - /sbin/iptables -A INPUT -p tcp --dport ssh -m conntrack --ctstate NEW -m recent --set 
+      - /sbin/iptables -A INPUT -p tcp --dport ssh -m conntrack --ctstate NEW -m recent --update --seconds 60 --hitcount 10 -j DROP 
+
+  - name: Protection against port scanning
+    shell: "{{ item }}"
+    with_items:
+      - /sbin/iptables -N port-scanning 
+      - /sbin/iptables -A port-scanning -p tcp --tcp-flags SYN,ACK,FIN,RST RST -m limit --limit 1/s --limit-burst 2 -j RETURN 
+      - /sbin/iptables -A port-scanning -j DROP
+
+  - name: Firewall rule - drop any traffic without rule
+    iptables:
+      chain: INPUT
+      jump: DROP
+
+  - name: Enable and start netfilter-persistent 
+    systemd:
+      name: netfilter-persistent
+      state: started
+      enabled: yes
+
+  - name: Save current state of the firewall in system file
+    shell: iptables-save > /etc/iptables/rules.v4
+
+  - name: Copy allRules script to /usr/local/bin and make executable
+    copy:
+      src: templates/allRules.j2
+      dest: /usr/local/bin/allRules
+      owner: root
+      group: root
+      mode: '0755'
+
+  - name: execute allRules script and output results to /root/SYSTEM/FIREWALL
+    shell: allRules > IPTABLES-all-rules.txt
+    args:
+      chdir: "{{ firewall_out }}"
+
+  - name: run netstat to see open ports
+    shell: netstat -tulpn > 'NETSTAT-iptables-results.txt'
+    args:
+      chdir: "{{ firewall_out }}"
+
+  tags:
+    - firewall
+    - iptables
+   

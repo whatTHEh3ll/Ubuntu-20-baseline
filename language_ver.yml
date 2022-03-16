@@ -1,0 +1,21 @@
+---
+
+- hosts: vagrant
+ 
+  
+  tasks:
+    
+    - name: get versions of installed languages
+      shell: "{{ item }}"
+      register: versions
+      with_items:
+        - ruby -v
+        - go version
+        - node -v
+        - rustc --version 
+
+    - name: print versions of installed languages
+      debug:
+        msg: "{{ versions.sdtout }}"
+    
+    

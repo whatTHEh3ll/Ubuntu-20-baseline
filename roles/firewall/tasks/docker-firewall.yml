@@ -1,0 +1,66 @@
+---
+
+- name: force docker to use ufw rules
+
+  block: 
+
+  - name: get default interface of system with bash
+    shell: echo $(ip route get 8.8.8.8 | awk -- '{printf $5}')
+    register: default_interface
+  
+  - name: disaplay default interface form previous command
+    debug:
+      msg: "{{ default_interface.stdout }}"
+
+  - name: configure ufw before.init to remove existing rules
+    blockinfile:
+      path: /etc/ufw/before.init
+      marker: "# {mark} ANSIBLE MANAGED BLOCK"
+      insertafter: stop\)
+      block: |
+        iptables -F DOCKER-USER || true
+        iptables -A DOCKER-USER -j RETURN || true
+        iptables -X ufw-user-input || true
+
+  - name: chmod /etc/ufw/before.init
+    file:
+      path: /etc/ufw/before.init
+      state: touch
+      mode: "a+x"
+
+  - name: add docker rules to /etc/ufw/after.rules
+    blockinfile: 
+      path: /etc/ufw/after.rules
+      state: present
+      block: |
+        # *filter
+        :DOCKER-USER - [0:0]
+        :ufw-user-input - [0:0]
+        :ufw-after-logging-forward - [0:0]
+
+        -A DOCKER-USER -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+        -A DOCKER-USER -m conntrack --ctstate INVALID -j DROP
+        -A DOCKER-USER -i {{ default_interface.stdout }} -j ufw-user-input
+        -A DOCKER-USER -i {{ default_interface.stdout }} -j ufw-after-logging-forward
+        -A DOCKER-USER -i {{ default_interface.stdout }} -j DROP
+      insertbefore: "COMMIT"
+
+  - name: set ufw rules for docker swarm
+    shell: | 
+      ufw allow proto tcp from {{ inventory_hostname | quote }} to any port 2377,7946
+      ufw allow proto udp from {{ inventory_hostname | quote }} to any port 4789,7946
+     
+  - name: reload ufw with shell module after applying docker rules  
+    shell: ufw reload 
+    # with_items:
+    #   - ufw --force enable
+    #   - ufw reload 
+
+  when: "'docker-ce' in ansible_facts.packages"
+  
+  tags:
+    - firewall
+    - docker-firewall
+        
+
+  

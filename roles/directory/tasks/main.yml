@@ -1,0 +1,28 @@
+---
+
+- name: Set timezone to America/Los_Angeles
+  timezone:
+    name: America/Los_Angeles
+
+- name: create /root/SYSTEM directory to write changes
+  file:
+    path: /root/SYSTEM
+    state: directory
+    force: yes 
+    # owner: root
+    # group: wheel 
+    # mode: '0775'
+
+- name: output time to /root/SYSTEM with timedatectl
+  shell: timedatectl > timedatectl.txt
+  args: 
+    chdir: /root/SYSTEM
+    
+  
+
+
+  
+
+
+   
+

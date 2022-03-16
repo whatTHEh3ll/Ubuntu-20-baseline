@@ -1,0 +1,11 @@
+---
+
+- name: Copy linushealthcheck script to /usr/local/bin and make executable
+  become: yes
+  copy:
+    src: templates/health.sh
+    dest: /usr/local/bin/health
+    owner: root
+    group: root
+    mode: '0755'
+  

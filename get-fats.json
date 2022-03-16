@@ -1,0 +1,262 @@
+ansible-playbook 2.9.6
+  config file = /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/ansible.cfg
+  configured module search path = ['/home/coney/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+  ansible python module location = /usr/lib/python3/dist-packages/ansible
+  executable location = /usr/bin/ansible-playbook
+  python version = 3.8.10 (default, Jun  2 2021, 10:49:15) [GCC 9.4.0]
+Using /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/ansible.cfg as config file
+
+PLAYBOOK: facts.yml **********************************************************************************************************
+1 plays in facts.yml
+
+PLAY [localhost] *************************************************************************************************************
+META: ran handlers
+
+TASK [set_fact] **************************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:7
+Thursday 09 September 2021  11:11:11 -0700 (0:00:00.047)       0:00:00.047 **** 
+ok: [localhost] => {"ansible_facts": {"cidr": "24"}, "changed": false}
+
+TASK [Ansible hostname] ******************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:10
+Thursday 09 September 2021  11:11:11 -0700 (0:00:00.079)       0:00:00.127 **** 
+ok: [localhost] => {
+    "msg": "coney"
+}
+
+TASK [Inventory hostname] ****************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:14
+Thursday 09 September 2021  11:11:11 -0700 (0:00:00.078)       0:00:00.206 **** 
+ok: [localhost] => {
+    "msg": "localhost"
+}
+
+TASK [ip address] ************************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:18
+Thursday 09 September 2021  11:11:11 -0700 (0:00:00.077)       0:00:00.283 **** 
+ok: [localhost] => {
+    "msg": "192.168.1.20"
+}
+
+TASK [ip address with submask] ***********************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:22
+Thursday 09 September 2021  11:11:11 -0700 (0:00:00.081)       0:00:00.365 **** 
+ok: [localhost] => {
+    "msg": "192.168.1.0/255.255.255.0"
+}
+
+TASK [interface] *************************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:26
+Thursday 09 September 2021  11:11:11 -0700 (0:00:00.105)       0:00:00.470 **** 
+ok: [localhost] => {
+    "msg": "wlo1"
+}
+
+TASK [CIDR] ******************************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:30
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.134)       0:00:00.605 **** 
+ok: [localhost] => {
+    "msg": "192.168.1.20/24"
+}
+
+TASK [gateway] ***************************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:34
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.074)       0:00:00.680 **** 
+ok: [localhost] => {
+    "msg": "192.168.1.1"
+}
+
+TASK [ssh hostname] **********************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:38
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.068)       0:00:00.748 **** 
+ok: [localhost] => {
+    "msg": "127.0.0.1"
+}
+
+TASK [MAC address] ***********************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:42
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.065)       0:00:00.814 **** 
+ok: [localhost] => {
+    "msg": "84:a6:c8:19:c5:8f"
+}
+
+TASK [hostname] **************************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:46
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.073)       0:00:00.887 **** 
+ok: [localhost] => {
+    "msg": "coney"
+}
+
+TASK [OS distribution] *******************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:50
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.076)       0:00:00.964 **** 
+ok: [localhost] => {
+    "msg": "Ubuntu"
+}
+
+TASK [ditribution] ***********************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:54
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.076)       0:00:01.040 **** 
+ok: [localhost] => {
+    "msg": "focal"
+}
+
+TASK [OS version] ************************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:58
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.072)       0:00:01.112 **** 
+ok: [localhost] => {
+    "msg": "20.04"
+}
+
+TASK [User] ******************************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:62
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.069)       0:00:01.182 **** 
+ok: [localhost] => {
+    "msg": "/home/coney"
+}
+
+TASK [processor] *************************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:66
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.072)       0:00:01.254 **** 
+ok: [localhost] => {
+    "msg": [
+        "0",
+        "GenuineIntel",
+        "Intel(R) Core(TM) i5-2450M CPU @ 2.50GHz",
+        "1",
+        "GenuineIntel",
+        "Intel(R) Core(TM) i5-2450M CPU @ 2.50GHz",
+        "2",
+        "GenuineIntel",
+        "Intel(R) Core(TM) i5-2450M CPU @ 2.50GHz",
+        "3",
+        "GenuineIntel",
+        "Intel(R) Core(TM) i5-2450M CPU @ 2.50GHz"
+    ]
+}
+
+TASK [count] *****************************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:70
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.071)       0:00:01.325 **** 
+ok: [localhost] => {
+    "msg": 1
+}
+
+TASK [cores] *****************************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:74
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.035)       0:00:01.361 **** 
+ok: [localhost] => {
+    "msg": 2
+}
+
+TASK [threads per core] ******************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:78
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.033)       0:00:01.395 **** 
+ok: [localhost] => {
+    "msg": 2
+}
+
+TASK [vcpus thread count] ****************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:82
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.033)       0:00:01.428 **** 
+ok: [localhost] => {
+    "msg": 4
+}
+
+TASK [Total RAM] *************************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:86
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.032)       0:00:01.461 **** 
+ok: [localhost] => {
+    "msg": 7851
+}
+
+TASK [Total RAM multiplied by two] *******************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:90
+Thursday 09 September 2021  11:11:12 -0700 (0:00:00.032)       0:00:01.494 **** 
+ok: [localhost] => {
+    "msg": "15702"
+}
+
+TASK [DATE] ******************************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:94
+Thursday 09 September 2021  11:11:13 -0700 (0:00:00.082)       0:00:01.577 **** 
+ok: [localhost] => {
+    "msg": "2021-09-09"
+}
+
+TASK [TIME] ******************************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:98
+Thursday 09 September 2021  11:11:13 -0700 (0:00:00.084)       0:00:01.661 **** 
+ok: [localhost] => {
+    "msg": "11:09:38"
+}
+
+TASK [date and time] *********************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:102
+Thursday 09 September 2021  11:11:13 -0700 (0:00:00.086)       0:00:01.748 **** 
+ok: [localhost] => {
+    "msg": "2021-09-09 11:09:38"
+}
+
+TASK [date and time] *********************************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:106
+Thursday 09 September 2021  11:11:13 -0700 (0:00:00.072)       0:00:01.821 **** 
+ok: [localhost] => {
+    "msg": "date-2021-09-09-time-11:09:38"
+}
+
+TASK [date and time reformatted] *********************************************************************************************
+task path: /home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:110
+Thursday 09 September 2021  11:11:13 -0700 (0:00:00.075)       0:00:01.897 **** 
+ok: [localhost] => {
+    "msg": "2021-09-09-11-11-13"
+}
+META: ran handlers
+META: ran handlers
+
+PLAY RECAP *******************************************************************************************************************
+localhost                  : ok=27   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+Thursday 09 September 2021  11:11:13 -0700 (0:00:00.085)       0:00:01.982 **** 
+=============================================================================== 
+interface ------------------------------------------------------------------------------------------------------------- 0.13s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:26 ----------------------------------
+ip address with submask ----------------------------------------------------------------------------------------------- 0.11s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:22 ----------------------------------
+TIME ------------------------------------------------------------------------------------------------------------------ 0.09s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:98 ----------------------------------
+date and time reformatted --------------------------------------------------------------------------------------------- 0.09s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:110 ---------------------------------
+DATE ------------------------------------------------------------------------------------------------------------------ 0.08s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:94 ----------------------------------
+Total RAM multiplied by two ------------------------------------------------------------------------------------------- 0.08s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:90 ----------------------------------
+ip address ------------------------------------------------------------------------------------------------------------ 0.08s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:18 ----------------------------------
+set_fact -------------------------------------------------------------------------------------------------------------- 0.08s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:7 -----------------------------------
+Ansible hostname ------------------------------------------------------------------------------------------------------ 0.08s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:10 ----------------------------------
+Inventory hostname ---------------------------------------------------------------------------------------------------- 0.08s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:14 ----------------------------------
+OS distribution ------------------------------------------------------------------------------------------------------- 0.08s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:50 ----------------------------------
+hostname -------------------------------------------------------------------------------------------------------------- 0.08s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:46 ----------------------------------
+date and time --------------------------------------------------------------------------------------------------------- 0.08s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:106 ---------------------------------
+CIDR ------------------------------------------------------------------------------------------------------------------ 0.07s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:30 ----------------------------------
+MAC address ----------------------------------------------------------------------------------------------------------- 0.07s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:42 ----------------------------------
+date and time --------------------------------------------------------------------------------------------------------- 0.07s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:102 ---------------------------------
+ditribution ----------------------------------------------------------------------------------------------------------- 0.07s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:54 ----------------------------------
+User ------------------------------------------------------------------------------------------------------------------ 0.07s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:62 ----------------------------------
+processor ------------------------------------------------------------------------------------------------------------- 0.07s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:66 ----------------------------------
+OS version ------------------------------------------------------------------------------------------------------------ 0.07s
+/home/coney/github-projects/Ansible-Bash/Lockdown_Ansible-Ubuntu-20-VAGRANT-2/facts.yml:58 ----------------------------------
+Playbook run took 0 days, 0 hours, 0 minutes, 1 seconds

@@ -1,0 +1,3 @@
+---
+- include: auditd.yml tags=logs,auditd
+- include: journalctl.yml tags=logs,journalctl

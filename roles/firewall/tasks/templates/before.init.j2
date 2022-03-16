@@ -1,0 +1,22 @@
+set -e
+
+box "$1" in
+start)
+    # typically required
+    ;;
+stop)
+    iptables -F DOCKER-USER || true
+    iptables -A DOCKER-USER -j RETURN || true
+    iptables -X ufw-user-input || true
+    # typically required
+    ;;
+status)
+    # optional
+    ;;
+flush-all)
+    # optional
+    ;;
+*)
+    echo "'$1' not supported"
+    echo "Usage: before.init {start|stop|flush-all|status}"
+    ;;

@@ -1,0 +1,22 @@
+#! /usr/bin/env bash
+
+ echo "Filter table:"
+ iptables -t filter -vL 
+
+ echo "Nat table:"
+ iptables -t nat -vL
+
+ echo "Mangle table:"
+ iptables -t mangle -vL
+
+ echo "Raw table:"
+ iptables -t raw -vL
+
+ echo "Security table:"
+ iptables -t security -vL
+
+ echo "Iptables verbose:"
+ iptables --list --numeric --verbose
+
+ echo 
+ echo "All rules in all tables printed"

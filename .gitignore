@@ -1,0 +1,55 @@
+**/references/**
+
+**/Projects/**
+
+#**/tasks/**
+
+**/out/**
+
+**/spare-playbooks/**
+
+**/facts.json/**
+
+*.code-workspace
+# *.json
+
+*.env
+.env 
+
+pass_vault.yml
+
+#vault.key
+
+doppler.yaml
+
+# Created by https://www.toptal.com/developers/gitignore/api/vagrant
+# Edit at https://www.toptal.com/developers/gitignore?templates=vagrant
+
+### Vagrant ###
+# General
+.vagrant/
+
+# Log files (if you are creating logs in debug mode, uncomment this)
+*.log
+
+### Vagrant Patch ###
+*.box
+
+# End of https://www.toptal.com/developers/gitignore/api/vagrant
+
+# Created by https://www.toptal.com/developers/gitignore/api/ansible
+# Edit at https://www.toptal.com/developers/gitignore?templates=ansible
+
+### Ansible ###
+*.retry
+logs
+*.log
+
+# ignore directories with system in title
+/system/?? 
+system-focal-development-ubuntu-20-192.168.1.173-02_23_2022_02:12:29 PM/
+
+# End of https://www.toptal.com/developers/gitignore/api/ansible
+
+# use 'git rm --cached file.name' to ignore commited file
+# use 'git status --ignored' to see ignore files

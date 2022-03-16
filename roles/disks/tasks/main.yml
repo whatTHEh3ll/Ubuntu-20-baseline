@@ -1,0 +1,114 @@
+---
+
+- name: Collect only facts about hardware
+  setup:
+    gather_subset:
+    - hardware
+ 
+- name: set fact for main disk name
+  set_fact:
+    main_disk:  "{{ hostvars[inventory_hostname].ansible_devices.keys() | map('regex_search', 'sd.*') | select('string') | list }}"
+    cacheable: yes
+    
+- name: remove special characters from characters
+  debug:
+    msg: '{{ main_disk | regex_replace("[^A-Za-z0-9]", "") }}'
+
+- name: write package_facts output to file
+  copy:
+    content: '{{ main_disk | regex_replace("[^A-Za-z0-9]", "") }}'
+    dest: "/home/{{ user_name }}/disks.txt"
+    force: yes 
+    owner: "{{ user_name }}"
+    group: "{{ user_name }}"
+    mode: 775
+
+- name: look up disks.txt
+  shell: cat disks.txt 
+  args:
+    chdir: /home/{{ user_name }}/
+  register: disk
+    
+- name: display fact for disk
+  debug:
+    var: "{{ disk.stdout_lines }}"
+
+- name: set fact for disk.stdout
+  set_fact:
+    disk: "{{ disk.stdout }}"
+
+- name: display disk fact
+  debug:
+    msg: "{{ disk }}"
+
+- name: UNSET fact for main disk name
+  set_fact:
+    main_disk:  ""
+    cacheable: yes
+
+- name: Read device information (always use unit when probing)
+  community.general.parted: device=/dev/{{ disk }} unit=GiB
+  register: disk_info
+
+# - name: Remove all partitions from disk
+#   parted:
+#     device: /dev/{{ disk }}
+#     number: '{{ item.num }}'
+#     state: absent
+#   loop: '{{ disk_info.partitions }}'
+
+- name: execute swap bash script with superuser only
+  script: swap.sh 
+
+- name: create a partition for var at disks end 
+  parted:
+    device: /dev/{{ disk }}
+    number: 3
+    state: present
+    # part_end: 5GiB
+
+- name: format "/dev/{{ disk }}3" for var partition 
+  filesystem:
+     fstype: ext4
+     dev: /dev/{{ disk }}3
+
+- name: mount var partition
+  mount:
+    fstype: ext4
+    src: /dev/{{ disk }}3
+    path: /var 
+    state: mounted
+
+- name: create a partition for tmp at disks end 
+  parted:
+    device: /dev/{{ disk }}
+    number: 4
+    state: present
+    # part_end: 10GiB
+
+- name: format "/dev/{{ disk }}4" for tmp partition 
+  filesystem:
+     fstype: ext4
+     dev: /dev/{{ disk }}4
+
+- name: mount tmp partition
+  mount:
+    fstype: ext4
+    src: /dev/{{ disk }}4
+    path: /tmp 
+    state: mounted
+
+- name: shred disk.txt 
+  shell: srm -vz disk.txt
+  args:
+    chdir: /home/{{ user_name }}
+
+
+
+- name: write disk_probe output to file
+  copy:
+    content: "{{ disk_info | to_nice_json }}"
+    dest: "/home/{{ user_name }}/{{ directory }}"
+    owner: "{{ user_name }}"
+    group: "{{ user_name }}"
+    mode: 775

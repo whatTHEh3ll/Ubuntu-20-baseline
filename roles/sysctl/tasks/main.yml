@@ -1,0 +1,31 @@
+---
+
+- name: Include sysctl variables
+  include_vars: 
+    file: vars/sysctl_config.yml
+
+- name: Change various sysctl-settings
+  sysctl:
+    name: '{{ item.key }}'
+    value: '{{ item.value }}'
+    sysctl_set: yes
+    state: present
+    reload: yes
+    ignoreerrors: yes
+  with_dict: '{{ sysctl_config }}'
+  
+- name: copy /etc/sysctl.conf to /root/SYSTEM
+  copy:
+    src: /etc/sysctl.conf
+    dest:  /root/SYSTEM
+    remote_src: yes 
+
+  
+ 
+ 
+
+ 
+  
+
+
+

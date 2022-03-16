@@ -1,0 +1,128 @@
+---
+
+- hosts: localhost
+  gather_facts: true
+  tasks:
+
+    -  set_fact:
+        cidr: "{{ (ansible_default_ipv4.address + '/' + ansible_default_ipv4.netmask) | ipaddr('prefix') }}"
+
+    - name: Ansible hostname
+      debug:
+        msg: "{{ ansible_hostname }}"
+
+    - name: Inventory hostname
+      debug:
+        msg: "{{ inventory_hostname }}"
+
+    - name: ip address
+      debug:
+          msg: "{{ ansible_default_ipv4.address }}"
+
+    - name: ip address with submask
+      debug:
+          msg: "{{ ansible_default_ipv4.network }}/{{ ansible_default_ipv4.netmask }}"
+
+    - name: interface
+      debug:
+          msg: "{{ ansible_default_ipv4.interface }}"
+
+    - name: CIDR 
+      debug:
+          msg: "{{ ansible_default_ipv4.address }}/{{ cidr }}"
+
+    - name: gateway
+      debug:
+          msg: "{{ ansible_default_ipv4.gateway }}"
+
+    - name: ssh hostname
+      debug:
+          msg: "{{ ansible_ssh_host }}"
+
+    - name: MAC address
+      debug:
+          msg: "{{ ansible_default_ipv4.macaddress }}"
+          
+    - name: hostname
+      debug:
+          msg: "{{ ansible_hostname }}"
+
+    - name: OS distribution
+      debug:
+          msg: "{{ ansible_distribution }}"
+
+    - name: ditribution
+      debug:
+          msg: "{{ ansible_distribution_release }}"
+
+    - name: OS version
+      debug:
+          msg: "{{ ansible_distribution_version }}"
+
+    - name: User
+      debug:
+          msg: "{{ ansible_env.HOME }}"
+
+    - name: processor
+      debug:
+          msg: "{{ ansible_processor }}"
+
+    - name: count
+      debug:
+          msg: "{{ ansible_processor_count }}"
+
+    - name: cores
+      debug:
+          msg: "{{ ansible_processor_cores }}"
+
+    - name: threads per core
+      debug:
+          msg: "{{ ansible_processor_threads_per_core }}"
+
+    - name: vcpus thread count 
+      debug:
+          msg: "{{ ansible_processor_vcpus }}"
+
+    - name: Total RAM
+      debug:
+          msg: "{{ ansible_memtotal_mb }}"
+
+    - name: Total RAM multiplied by two
+      debug:
+          msg: "{{ ansible_memtotal_mb * 2 }}"
+    
+    - name: DATE
+      debug:
+          msg: "{{ ansible_date_time.date }}"
+
+    - name: TIME
+      debug:
+          msg: "{{ ansible_date_time.time }}"
+
+    - name: date and time
+      debug:
+          msg: "{{ ansible_date_time.date }} {{ ansible_date_time.time }}"
+
+    - name: date and time
+      debug:
+          msg: "date-{{ ansible_date_time.date }}-time-{{ ansible_date_time.time }}"
+
+    - name: date and time reformatted
+      debug: 
+          msg: "{{ lookup('pipe','date +%Y-%m-%d-%H-%M-%S') }}"
+
+ 
+
+ 
+          
+
+    
+
+    
+
+    
+
+
+    
+
+    

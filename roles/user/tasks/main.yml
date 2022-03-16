@@ -1,0 +1,88 @@
+
+---
+
+- name: install packages needed to create a random password
+  apt:
+    name:
+      - pwgen
+      - secure-delete
+
+- name: generate random number between 33 and 11
+  set_fact:
+    random_number: "{{ 33 | random(11) }}"
+  
+- name: Print the random number
+  debug: 
+    var: random_number
+
+- name: generate random password  
+  shell: pwgen -s -1 {{ random_number | quote }} > password.txt 
+  args: 
+    chdir: /tmp 
+
+- name: lookup file for randomly generated password
+  shell: cat password.txt 
+  register: ANSIBLE_SUDO_PASSWORD
+  args:
+    chdir: /tmp
+
+- name: show password
+  debug:
+    msg: "{{ ANSIBLE_SUDO_PASSWORD.stdout }}"
+
+- name: set facts for my_password
+  set_fact:                                                                                           
+    pass_word: "{{ ANSIBLE_SUDO_PASSWORD.stdout }}"
+    cacheable: yes
+
+- name: Ensure wheel group is present
+  group:
+    name: wheel
+    state: present
+  
+- name: Ensure wheel group has sudo privileges
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: "^%wheel"
+    line: "%wheel ALL=(ALL:ALL) ALL"
+    validate: "/usr/sbin/visudo -cf %s"
+  
+- name: Install the `sudo` package
+  package:
+    name: sudo
+    state: latest
+
+- name: Create the non-root user account
+  user:
+    name: "{{ user_name }}"
+    password: "{{ pass_word | password_hash('sha512') }}"
+    shell: /bin/bash
+    update_password: on_create
+    groups: wheel
+    append: yes
+
+- name: Add user name and password to varaibles to hosts.ini
+  become: false  
+  lineinfile:
+    path: hosts.ini
+    regex: "{{ inventory_hostname }}"
+    line: "{{ inventory_hostname }} ansible_user={{ user_name }} ansible_become=yes ansible_sudo_pass={{ pass_word }}"
+    state: present
+  delegate_to: localhost
+
+- name: refresh inventory after assigining user name and password 
+  meta: refresh_inventory
+
+- name: Pause for 1 minute 
+  pause:
+    minutes: 1 
+
+- name: remove /tmp/password.txt
+  shell: srm -vz password.txt 
+  args:
+    chdir: /tmp 
+
+
+
+

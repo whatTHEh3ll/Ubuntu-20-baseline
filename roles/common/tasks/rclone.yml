@@ -1,0 +1,39 @@
+---
+
+- name: rclone 
+
+  block:
+
+  - name: download rclone install script
+    get_url:
+      url: https://rclone.org/install.sh
+      dest: /home/{{ user_name }}
+
+  - name: execute rclone script
+    shell: bash install.sh
+    args:
+      chdir: /home/{{ user_name }}
+    register: rcloneinstall
+
+  - name: debug output of rclone install 
+    debug:
+      msg: "{{ rcloneinstall.stdout }}"
+
+  - name: 'rclone : cleanup fragments'
+    file:
+      dest: /home/{{ user_name }}/install.sh
+      state: absent
+
+  - name: copy rclone.conf file to /home/{{ user_name }}/.config/rclone/rclone.conf
+    copy:
+      src: configs/rclone.conf
+      dest: /home/{{ user_name }}/.config/rclone/
+      force: yes 
+      decrypt: yes
+      owner: "{{ user_name }}"
+      group: "{{ user_name }}"
+    no_log: True
+
+  tags:
+    - common
+    - rclone 

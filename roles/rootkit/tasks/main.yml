@@ -1,0 +1,47 @@
+---
+
+- name: "Check if debconf-utils related packages are installed"
+  package_facts:
+    manager: "auto"
+
+- name: install debconf-utils if not installed for rootkit protection
+  apt:
+    name: 
+      - debconf-utils
+      - python3-apt
+    state: latest
+  when:
+     - "'debconf-utils' not in ansible_facts.packages"
+     - "'python3-apt' not in ansible_facts.packages"
+    
+- name: install rootkit protection
+  apt:
+    name:
+      - rkhunter
+      - chkrootkit
+    state: latest
+
+- name: reconfigure rkhunter with debconf
+  debconf:
+    name: rkhunter
+    question: "{{ item }}"
+    value: 'True'
+    vtype: boolean
+  with_items:
+    - rkhunter/apt_autogen 
+    - rkhunter/cron_db_update
+    - rkhunter/cron_daily_run
+    
+- name: reconfigure chkrootkit with debconf
+  debconf:
+    name: chkrootkit
+    question: "{{ item.question }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.vtype }}"
+  loop:
+    - {question: 'chkrootkit/diff_mode', value: 'true', vtype: 'boolean'}
+    - {question: 'chkrootkit/run_daily', value: 'true', vtype: 'boolean'}
+    - {question: 'chkrootkit/run_daily_opts', value: '-q', vtype: 'string'}
+
+
+

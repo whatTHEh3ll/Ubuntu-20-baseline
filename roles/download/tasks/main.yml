@@ -1,0 +1,92 @@
+---
+
+- name: create directories for systemd-analyze output and
+  file:
+    path: "{{ item }}"
+    state: directory
+    force: yes 
+  with_items:
+    - /root/SYSTEM/systemd-output
+    - /root/SYSTEM/precces-accnt
+
+- name: analyze systemd and output to file
+  shell: "{{ item }}"
+  args:
+    chdir: /root/SYSTEM/systemd-output
+  with_items:
+    - systemd-analyze > system-analyze.txt
+    - systemd-analyze blame > systemd-analyze-blame.txt
+    - systemd-analyze critical-chain > systemd-critical-chain.txt
+    - systemd-analyze plot > boot_analysis.svg
+
+- name: get basic process acconting
+  shell: "{{ item }}"
+  args:
+    chdir: /root/SYSTEM/precces-accnt
+  with_items:
+    - /usr/sbin/accton on
+    - sa > user-proccesses
+
+- name: register date and time
+  shell: date +"%m_%d_%Y_%r"
+  register: time
+  
+- name: show system time
+  debug:
+    msg: time.stdout
+
+- name: set fact for system-{{ ansible_hostname }}---{{ inventory_hostname }}---{{ time.stdout }}
+  set_fact:
+    directory: system-{{ ansible_hostname }}---{{ inventory_hostname }}---{{ time.stdout }}
+    cacheable: yes
+
+- name: change name of /root/SYSTEM to {{ directory }}
+  copy:
+    src: /root/SYSTEM
+    dest: "/root/{{ directory }}"
+    remote_src: true 
+
+- name: Recursively change ownership of {{ directory }}
+  file:
+    path: /root/{{ directory }}
+    state: directory
+    recurse: yes
+    owner: "{{ user_name }}"
+    group: "{{ user_name }}"
+    mode: '0775'
+  
+- name: archive /root/{{ directory }} to root/{{ directory }}.zip
+  archive:
+    path: /root/{{ directory }}
+    dest: /root/{{ directory }}.zip
+    format: zip
+    remove: yes
+
+- name: download /root/{{ directory }}.zip from remote node to playbook directory
+  fetch:
+    src: /root/{{ directory }}.zip
+    dest: "{{ playbook_dir }}/"
+    flat: yes
+
+- name: unzip {{ directory }}.zip on local system
+  become: false
+  unarchive:
+    src: "{{ playbook_dir }}/{{ directory }}.zip"
+    dest: "{{ playbook_dir }}/"
+  delegate_to: localhost
+
+- name: remove {{ directory }}.zip from local playbook directory
+  become: false
+  file:
+    dest: "{{ playbook_dir }}/{{ directory }}.zip"
+    state: absent
+  delegate_to: localhost
+
+- name: remove /root/{{ directory }}.zip from remote node 
+  file: 
+    state: absent
+    path: /root/{{ directory }}.zip 
+ 
+   
+    
+

@@ -1,0 +1,92 @@
+---
+
+- name: install and configure Tor
+
+  block: 
+
+  - name: create /root/SYSTEM/Tor
+    file:
+      path: /root/SYSTEM/Tor
+      state: directory
+      force: yes 
+
+  - name: 'anonymity : Install apt-transport-https'
+    apt:
+      update_cache: yes
+      name: apt-transport-https
+
+  - name: 'anonymity : Add Tor repo GPG signing key to Apt'
+    apt_key:                                        
+      url: "https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc"
+      id: A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
+      state: present
+
+  - name: 'anonymity : Add Tor repo to Apt sources for bionic'
+    apt_repository:
+      repo: "deb https://deb.torproject.org/torproject.org bionic main"
+      update_cache: yes
+      validate_certs: yes
+      state: present
+    when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'bionic'
+
+  - name: 'anonymity : Add Tor repo to Apt sources for focal'
+    apt_repository:
+      repo: "deb https://deb.torproject.org/torproject.org focal main"
+      update_cache: yes
+      validate_certs: yes
+      state: present
+    when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'focal'
+
+  - name: 'anonymity : Install Tor packages'
+    apt:
+      name: 
+        - tor
+        - deb.torproject.org-keyring
+        - nyx
+        - proxychains4
+        - torsocks
+        - tor-geoipdb
+        - obfs4proxy
+      state: present
+      update_cache: true
+
+  - name: copy torrc file
+    template:
+      src: templates/torrc.j2
+      dest: /etc/tor/torrc
+      force: yes 
+      group: root
+      owner: root 
+      mode: 0644
+
+  - name: download malicous ip tor check script
+    ignore_errors: yes 
+    get_url:
+      url: https://raw.githubusercontent.com/TheSmashy/TorExitRelayExclude/main/exclude_noContactInfo_Exits.py
+      dest: /home/{{ user_name }}/
+      group: "{{ user_name }}"
+      owner: "{{ user_name }}"
+      mode: 0775
+
+  - name: 'anonymity : Restart Tor'
+    systemd:
+      name: tor
+      state: restarted
+
+  - name: check tor status and write to file
+    shell: "{{ item }}"
+    args:
+      chdir: /root/SYSTEM/Tor
+    ignore_errors: yes 
+    with_items:
+      - sudo -u debian-tor tor --verify-config > tor-verify-config.txt
+      - ss -nlt > tor-proccess.txt
+      - curl ipinfo.io > ipinfo.json
+      - torsocks curl ipinfo.io > torsocks-ipinfo.json
+  
+  tags:
+    - anonymity
+    - tor 
+
+
+    

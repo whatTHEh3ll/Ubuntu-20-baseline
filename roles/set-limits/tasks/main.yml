@@ -1,0 +1,114 @@
+---
+
+# - name: install cracklib
+#   apt:
+#     name: libcrack2
+#     state: present 
+
+- name: create /root/SYSTEM/Limits 
+  file:
+    path: /root/SYSTEM/Limits
+    state: directory
+    force: yes 
+
+- name: set limits on limit.conf 
+  blockinfile:
+    dest: /etc/security/limits.conf
+    marker: "#Ansible Managed Block"
+    block: |
+      * hard core 0
+      * soft core 0
+
+- name: set fs.suid_dumpable in sysctl 
+  sysctl:
+    name: fs.suid_dumpable
+    value: '0'
+    state: present
+
+- name: set kernel.core_pattern in sysctl 
+  sysctl:
+    name: kernel.core_pattern
+    value: '|/bin/false'
+    state: present
+
+- name: create directory in /etc/systemd/coredump.conf.d/
+  file:
+    path: /etc/systemd/coredump.conf.d/
+    state: directory
+    owner: root
+    group: root
+    mode: '0664'
+
+- name: create custom.conf file in /etc/systemd/coredump.conf.d/
+  file:
+    path: /etc/systemd/coredump.conf.d/custom.conf
+    state: touch
+    owner: root
+    group: root
+    mode: '0664'
+
+- name: add lmits to /etc/systemd/coredump.conf.d/custom.conf
+  blockinfile:
+    dest: /etc/systemd/coredump.conf.d/custom.conf
+    marker: "#Ansible Managed Block"
+    block: |
+      [Coredump]
+      Storage=none
+      ProcessSizeMax=0
+
+- name: reload systemd  
+  systemd:
+    daemon_reload: yes
+
+- name: add lmits to /etc/systemd/coredump.conf.d/custom.conf
+  replace:
+    path: /etc/systemd/coredump.conf.d/custom.conf
+    regexp: ^#(.*DefaultLimitCORE=.*)
+    replace: DefaultLimitCORE=infinity
+      
+- name: force systemd to re-execute itself 
+  systemd:
+    daemon_reexec: yes
+
+- name: edit /etc/login.defs
+  replace:
+    path: /etc/login.defs
+    regexp: "{{ item.regexp }}"
+    replace: "{{ item.replace }}"
+  with_items:
+    #- { regexp: "^#(.*SHA_CRYPT_MIN_ROUNDS 5000.*)", replace: "SHA_CRYPT_MIN_ROUNDS 65536"}
+    - { regexp: "^#(.*SHA_CRYPT_MAX_ROUNDS 5000.*)", replace: "SHA_CRYPT_MAX_ROUNDS 65536"}
+    - { regexp: "PASS_MAX_DAYS	99999", replace: "PASS_MAX_DAYS	 100"}
+    - { regexp: "PASS_MIN_DAYS	0", replace: "PASS_MIN_DAYS	  30"}
+    - { regexp: "PASS_WARN_AGE	7", replace: "PASS_WARN_AGE	 5"}
+    - { regexp: "UMASK		022", replace: "UMASK		027"}
+
+- name: add SHA password hashes to /etc/pam.d/passwd
+  lineinfile:
+     path: /etc/pam.d/passwd
+     line: password	required	pam_unix.so sha512 shadow nullok rounds=65536
+   
+- name: copy /etc/login.defs to /root/SYSTEM/Limits/
+  copy: 
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    force: yes
+    remote_src: yes
+  loop:
+     - {src: '/etc/login.defs', dest: '/root/SYSTEM/Limits/login.defs'}
+     - {src: '/etc/security/limits.conf', dest: '/root/SYSTEM/Limits/limits.conf'}
+     - {src: '/etc/systemd/coredump.conf.d/custom.conf', dest: '/root/SYSTEM/Limits/custom.conf'}
+     - {src: '/etc/pam.d/passwd', dest: '/root/SYSTEM/Limits/passwd'}
+  
+    
+      
+
+
+
+  
+
+   
+
+  
+
+

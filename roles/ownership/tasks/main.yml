@@ -1,0 +1,21 @@
+---
+
+- name: change ownership on /etc/passwd and /etc/group
+  file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: 0664
+  with_items:
+    - "/etc/passwd"
+    - "/etc/group"
+
+- name: change ownership on /etc/shadow
+  file:
+    path: /etc/shadow
+    owner: root
+    group: shadow
+    mode: o-rwx,g-rw
+
+
+ 

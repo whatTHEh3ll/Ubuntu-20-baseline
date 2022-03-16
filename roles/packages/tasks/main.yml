@@ -1,0 +1,80 @@
+---
+
+- name: Update all packages to the latest version
+  apt:
+    upgrade: dist 
+
+- name: install additional packages
+  apt:
+    name: 
+      - vim
+      - htop
+      - mosh 
+      - git
+      - nano
+      - wget
+      - python3-pip
+      - python3-venv
+      - bleachbit
+      - snapd
+      - gcc
+      - make
+      - parallel
+      - jq
+      - gnupg2
+      - software-properties-common
+      - curl
+      - build-essential
+      - iproute2
+      - net-tools
+      - apt-transport-https
+      - gnupg-agent
+      - ca-certificates 
+      - secure-delete
+      - colorized-logs 
+      - tmux 
+      - acct
+      - apt-show-versions
+    state: present
+    update_cache: true
+
+- name: install acl
+  apt: 
+    name: acl
+    state: present 
+  
+- name: Get the package facts from hosts
+  package_facts:
+    manager: auto
+
+- name: Display output
+  debug:
+    msg: ansible_facts.packages
+
+- name: write package_facts output to file
+  copy:
+    content: "{{ ansible_facts.packages | to_nice_json }}"
+    dest: "/root/SYSTEM/Installed-PACKAGES.json"
+    # owner: "{{ user_name }}"
+    # group: "{{ user_name }}"
+    # mode: 775
+
+- name: install debsums
+  apt:
+    name: debsums
+    state: present 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

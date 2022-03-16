@@ -1,0 +1,12 @@
+---
+
+- name: install Hashicorp software 
+ 
+  block:
+
+  - name: install hashicorp software with script module
+    script: scripts/hashicorp.sh
+
+  tags:
+    - common
+    - hashicorp

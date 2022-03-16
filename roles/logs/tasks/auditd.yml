@@ -1,0 +1,104 @@
+---
+
+- name: auditd and configure rulles
+
+  block:
+
+  - name: create /root/SYSTEM/auditd directory
+    file:
+      path: /root/SYSTEM/auditd 
+      state: directory
+      force: yes
+
+  - name: Install auditd and audispd-plugins
+    apt:
+      name: 
+        - auditd
+        - audispd-plugins
+      state: present
+
+  - name: copy audit.rules to /etc/audit/ from https://github.com/Neo23x0/auditd/blob/master/audit.rules
+    copy:
+      src: templates/audit.rules.j2
+      dest: /etc/audit/rules.d/audit.rules
+      force: yes 
+      owner: root
+      group: root
+      mode: 0644
+    
+  - name: "restart auditd"
+    systemd:
+      name: auditd
+      state: restarted
+  
+  - name: enable service auditd and ensure it is not masked
+    systemd:
+      name: auditd
+      enabled: yes
+      masked: no
+
+  - name: 'reboot machine for auditd to see if rules where applied'
+    reboot:
+      reboot_timeout: 300
+        
+  - name: 'check uptime for auditd reboot'
+    shell: uptime
+    register: UPTIME_POST_REBOOT
+
+  - name: get uptime
+    debug: 
+      msg: "{{UPTIME_POST_REBOOT.stdout}}"
+
+  - name: list auditd rules and write to file and run aditd for for first time
+    shell: "{{ item }}"
+    args:
+      chdir: /root/SYSTEM/auditd 
+    with_items:
+      - auditctl -l > auditd-rules.txt
+      - aureport > auditd-first-run.txt
+
+  - name: output audit log to csv for testing
+    shell: ausearch --start today --format csv > 'csv-audit.csv'
+    args: 
+      chdir: /root/SYSTEM/auditd 
+
+  - name: "Check if Docker packages are installed"
+    package_facts:
+      manager: "auto"
+
+  - name: run docker docker-bench-security scan AFTER applying Auditd rules 
+    shell: ./docker-bench-security.sh -b
+    args:
+      chdir: /root/docker-bench-security
+    when: "'docker-ce' in ansible_facts.packages"
+
+  - name: copy /root/docker-bench-security/logs to /root/SYSTEM/docker AFTER applying Auditd rules
+    copy: 
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      remote_src: yes 
+      force: yes 
+    with_items:
+      - {src: '/root/docker-bench-security/log/docker-bench-security.log', dest: '/root/SYSTEM/docker/docker-bench-with-Auditd.log'}
+      - {src: '/root/docker-bench-security/log/docker-bench-security.log.json', dest: '/root/SYSTEM/docker/docker-bench-with-Auditd.log.json'}
+    
+  - name: remove docker-bench-security.log and docker-bench-security.log.json AFTER applying Auditd rules
+    file:
+      path: "{{ item }}"
+      state: absent 
+    with_items:
+      - /root/docker-bench-security/log/docker-bench-security.log
+      - /root/docker-bench-security/log/docker-bench-security.log.json
+  tags:
+    - logs
+    - auditd  
+
+
+
+
+
+
+ 
+ 
+
+

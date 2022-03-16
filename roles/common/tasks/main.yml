@@ -1,0 +1,11 @@
+---
+#- include: golang.yml tags=common,golang
+# - include: ruby.yml tags=common,ruby
+# - include: node.yml tags=common,node
+- include: lxd.yml tags=common,lxd 
+# - include: rust.yml tags=common,rust 
+- include: docker.yml tags=common,docker 
+- include: hashicorp.yml tags=common,hashicorp  
+- include: rclone.yml tags=common,rclone
+
+

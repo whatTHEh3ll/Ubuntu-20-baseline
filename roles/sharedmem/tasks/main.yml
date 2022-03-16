@@ -1,0 +1,13 @@
+---
+- name: execute sharedmem bash script with superuser only
+  script: scripts/sharedmem.sh 
+
+- name: copy clearcache script to /usr/local/bin
+  copy:
+    src: templates/clearcache.j2
+    dest: /usr/local/bin/clearcache
+    owner: root
+    group: root
+    mode: '0755'
+  
+  

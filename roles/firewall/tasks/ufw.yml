@@ -1,0 +1,44 @@
+---
+
+- name: set up ufw 
+  
+  block:
+
+  - name: Install ufw
+    apt:
+      name: ufw
+      state: latest 
+
+  - name: setup ufw rules script
+    script: scripts/ufw.sh
+    
+  - name: add lines to /etc/before.rules
+    blockinfile:
+      path: /etc/ufw/before.rules 
+      state: present
+      block: |
+        ##Prevent Ping Flood##
+        -A INPUT -p icmp -m limit --limit 6/s --limit-burst 1 -j ACCEPT
+        -A INPUT -p icmp -j DROP
+
+        # allow outbound icmp
+        -A ufw-before-output -p icmp -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+        -A ufw-before-output -p icmp -m state --state ESTABLISHED,RELATED -j ACCEPT
+      insertbefore: "COMMIT"
+
+  - name: reload ufw with shell module
+    shell: ufw reload
+
+  - name: get ufw status by numbers
+    shell: ufw status numbered > 'UFW-status-numbered.txt'
+    args:
+      chdir: "{{ firewall_out }}"
+    register: ufw
+  
+  - name: get ufw rules by numbers 
+    debug:
+      msg: ufw.stdout
+
+  tags:
+    - firewall
+    - ufw 

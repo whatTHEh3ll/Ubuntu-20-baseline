@@ -1,0 +1,10 @@
+{
+  "icc": false,
+  "storage-driver": "overlay2",
+  "default-ulimit": true,
+  "userns-remap": "default",
+  "log-driver": "syslog",
+  "live-restore": true,
+  "no-new-privileges": true    
+}
+ 

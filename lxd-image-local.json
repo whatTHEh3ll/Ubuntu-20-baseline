@@ -1,0 +1,30 @@
+{
+    "provisioners": [
+      {
+        "type": "shell",
+        "inline": [ 
+         "apt update -y",
+         "apt install -y python3 git nano ssh net-tools",
+         "mkdir -p ~/.ssh",
+         "touch ~/.ssh/authorized_keys",
+         "echo 'PUBLIC SSH KEY HERE' > ~/.ssh/authorized_keys",
+         "systemctl restart ssh"
+        ] 
+      }
+     
+    ],
+
+  
+    "builders": [
+      {
+        "type": "lxd",
+        "name": "Ansible-test-ubuntu-20",
+        "image": "ubuntu-daily:focal",
+        "output_image": "acme_ubuntu-focal",
+        "init_sleep": "10",
+        "publish_properties": {
+          "description": "UBUNTU-20.04-BASE-IMAGE-FOR-ANSIBLE"
+        }
+    }
+  ]
+}

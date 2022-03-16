@@ -1,0 +1,60 @@
+---
+
+- name: change ssh port 
+
+  block:
+
+  - name: assign new port to ssh
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: '^#Port'
+      line: 'Port {{ ssh_port }}'
+
+  - name: Restart sshd
+    systemd:
+      state: restarted
+      daemon_reload: yes
+      name: sshd
+
+  - name: Ansible replace string in Ansible Hosts.ini
+    become: false  
+    lineinfile:
+      dest: hosts.ini
+      regexp: "{{ inventory_hostname }} ansible_user={{ user_name }} ansible_become=yes ansible_sudo_pass={{ pass_word }}"
+      line: "{{ inventory_hostname }}:{{ ssh_port }} ansible_user={{ user_name }} ansible_become=yes ansible_sudo_pass={{ pass_word }}"
+      state: present
+    delegate_to: localhost
+
+  - name: refresh inventory after changing ssh port 
+    meta: refresh_inventory
+
+  - name: Pause for 2 minutes wait for inventory to refresh after ssh port change 
+    pause:
+      minutes: 2
+
+  - name: Wait ssh port changes and reconnect 
+    become: false
+    wait_for:
+      port: "{{ ssh_port }}"
+      host: "{{ inventory_hostname }}"
+      search_regex: OpenSSH
+      delay: 10
+      timeout: 60
+    delegate_to: localhost
+
+  - name: Check ssh connection for new inventory
+    shell: "uptime"
+    register: Uptime
+
+  - debug: 
+      var: Uptime
+
+  - name: unset set facts for pass_word
+    set_fact:                                                                                           
+      pass_word: ""
+      ANSIBLE_SUDO_PASSWORD: ""
+      cacheable: yes
+
+  tags:
+    - ssh
+    - ssh-port 

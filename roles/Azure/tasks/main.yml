@@ -1,0 +1,8 @@
+---
+
+- name: remove default Azure user if applicable 
+  user:
+    name: Azure
+    state: absent
+    force: yes
+  when: inventory_hostname == 'Azure'

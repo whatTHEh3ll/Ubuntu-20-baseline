@@ -1,0 +1,48 @@
+---
+
+- name: Start lxd insallation
+  
+  block:
+
+  - name: remove apt version of lxd 
+    apt:
+      name:
+        - lxd
+        - lxd-client 
+      state: absent
+      purge: yes 
+      autoremove: yes
+      autoclean: yes
+
+  - name: install zfs for for lxd
+    apt:
+      name: zfsutils-linux
+      state: present 
+
+  - name: check to see if snapd is installed
+    apt: 
+     name: snapd
+    when: "'snapd' not in ansible_facts.packages"
+
+  - name: install lxd  with snap
+    snap:
+      name: lxd 
+      state: present
+
+  - name: add non root user to lxd
+    user:
+      name: "{{ user_name }}"
+      groups: lxd
+      append: yes
+
+  - name: configure lxd with preseed bash script
+    script: scripts/lxd-preseed.sh 
+
+  - name: get lxc version
+    shell: lxc version > lxc-version.txt
+    args:
+      chdir: /root/SYSTEM  
+
+  tags:
+    - common
+    - lxd 

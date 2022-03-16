@@ -1,0 +1,124 @@
+---
+
+- name: ssh configuration
+
+  block:
+
+  - name: Add local public key for key-based SSH authentication
+    authorized_key:
+      user: "{{ user_name }}"
+      state: present
+      key: "{{ lookup('file', public_key) }}"
+  
+  - name: Harden sshd configuration
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+      state: present
+    with_items:
+      - regexp: "^#?PermitRootLogin"
+        line: "PermitRootLogin no"
+      - regexp: "^#?PasswordAuthentication"
+        line: "PasswordAuthentication no"
+      - regexp: "^#?AllowAgentForwarding"
+        line: "AllowAgentForwarding no"
+      - regexp: "^#?AllowTcpForwarding"
+        line: "AllowTcpForwarding no"
+      - regexp: "^#?MaxAuthTries"
+        line: "MaxAuthTries 2"
+      - regexp: "^#?MaxSessions"
+        line: "MaxSessions 2"
+      - regexp: "^#?TCPKeepAlive"
+        line: "TCPKeepAlive no"
+      - regexp: "^#?UseDNS"
+        line: "UseDNS no"
+      - regexp: "^#?AllowAgentForwarding"
+        line: "AllowAgentForwarding no"
+      - regexp: "^#?IgnoreRhosts "
+        line: "IgnoreRhosts yes"
+      - regexp: "^#?HostbasedAuthentication"
+        line: "HostbasedAuthentication no"
+      - regexp: "^#?LoginGraceTime"
+        line: "LoginGraceTime 120"
+      - regexp: "^#MaxStartups 10:30:100$"
+        line: "MaxStartups 2"
+      - regexp: "^#?AllowTcpForwarding"
+        line: "AllowTcpForwarding no"
+      - regexp: "^X11Forwarding?"
+        line: "X11Forwarding no"
+      - regexp: "^#?StrictModes"
+        line: "StrictModes yes"
+      - regexp: "^#?ClientAliveInterval"
+        line: "ClientAliveInterval 300"
+      - regexp: "^#?ClientAliveCountMax "
+        line: "ClientAliveCountMax 0"
+      - regexp: "^#?PrintLastLog"
+        line: "PrintLastLog no"
+      - regexp: "^#?PermitUserEnvironment"
+        line: "PermitUserEnvironment no"
+      - regexp: "^#?PermitEmptyPasswords"
+        line: "PermitEmptyPasswords no"
+      - regexp: "^#?Compression delayed"
+        line: "Compression yes"
+      - regexp: "^#?PrintLastLog yes"
+        line: "PrintLastLog yes"
+
+  - name: add lines to ssh configuration
+    blockinfile:
+      dest: /etc/ssh/sshd_config
+      state: present
+      insertafter: '^IgnoreRhosts'
+      block: |
+        RhostsAuthentication no
+        RhostsRSAAuthentication no
+        RSAAuthentication yes
+        Protocol 2
+  
+  - name: Harden pamd./sshd   
+    lineinfile:
+      dest: /etc/pam.d/sshd
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+      state: present
+    with_items:
+      - regexp: "^session    optional     pam_motd.so  motd=/run/motd.dynamic?"
+        line: "#session    optional     pam_motd.so  motd=/run/motd.dynamic"
+      - regexp: "^session    optional     pam_motd.so noupdate?"
+        line: "#session    optional     pam_motd.so noupdate"
+
+  - name: Disable SSH short modulis for DH
+    shell: |-
+      awk '$5 >= 3071' /etc/ssh/moduli > /tmp/moduli && 
+      mv /tmp/moduli /etc/ssh/moduli 
+      
+  - name: copy login-notify.sh for email notifications for ssh logins
+    copy:
+      src: scripts/login-notify.sh
+      dest: /etc/ssh/login-notify.sh
+      force: yes
+      decrypt: yes  
+      mode: a+x
+
+  - name: add login-notify.sh to sshd
+    blockinfile:
+      dest: /etc/pam.d/sshd
+      backup: yes
+      insertafter: EOF
+      block: |
+        # Send an email when a user logs in via ssh
+        session optional pam_exec.so seteuid /etc/ssh/login-notify.sh
+
+  - name: copy /etc/ssh/sshd_config to /root/SYSTEM 
+    copy:
+      src: /etc/ssh/sshd_config
+      dest: /root/SYSTEM/sshd_config
+      force: yes
+      remote_src: yes
+  
+  tags:
+    - ssh
+    - ssh-config  
+
+
+

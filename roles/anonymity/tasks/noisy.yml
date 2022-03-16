@@ -1,0 +1,41 @@
+---
+- block:
+
+  - name: 'anonymity : download noisy repository'
+    git:
+      repo: https://github.com/1tayH/noisy.git
+      dest: /opt/noisy
+
+  - name: 'anonymity : change file permissions of /opt/noisy directory'
+    file: 
+      path: /opt/noisy
+      recurse: yes
+      owner: "{{ user_name }}"
+      group: "{{ user_name }}"
+
+  - name: 'anonymity : Install requests library'
+    become: yes 
+    become_user: "{{ user_name }}"
+    pip:
+      name: requests
+      executable: pip3
+  
+  - name: 'anonymity : copy custom config to nosiy directory'
+    copy:
+      src: config.json
+      dest: /opt/noisy
+      owner: "{{ user_name }}"
+      group: "{{ user_name }}"
+      force: yes 
+
+  - name: 'anonymity : copy startup script for noisy'
+    template:
+      src: templates/noisy.j2
+      dest: /usr/local/bin/noisy
+      owner: "{{ user_name }}"
+      group: "{{ user_name }}"
+      mode: '0755'
+  
+  tags:
+    - anonymity
+    - noisy 

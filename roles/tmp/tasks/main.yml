@@ -1,0 +1,20 @@
+---
+
+- name: copy /usr/lib/systemd/system/systemd-tmpfiles-clean.timer
+  copy:
+    src: configs/systemd-tmpfiles-clean.timer
+    dest: /usr/lib/systemd/system/systemd-tmpfiles-clean.timer
+    owner: root
+    group: root
+    mode: 0644
+
+- name: restart daemon after adding /usr/lib/systemd/system/systemd-tmpfiles-clean.timer
+  systemd:
+    state: started
+    daemon_reload: yes
+    name: systemd-tmpfiles-clean.timer
+
+- name: enable systemd-tmpfiles-clean.timer with systemd after daemon changes
+  systemd:
+    name: systemd-tmpfiles-clean.timer
+    enabled: yes 

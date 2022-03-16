@@ -1,0 +1,6 @@
+Host development-ubuntu-20
+  HostName 192.168.1.173
+  User user
+  Port 2277
+  IdentityFile /home/rizo/.ssh/id_ed25519
+  

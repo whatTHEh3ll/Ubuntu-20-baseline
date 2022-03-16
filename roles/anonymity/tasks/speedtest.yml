@@ -1,0 +1,34 @@
+---
+
+- name: install and configure speedtest 
+
+  block:
+
+  - name: install python setuptools
+    apt:
+      pkg: python-setuptools 
+      state: latest
+
+  - name: Auto-Create project directory to dump speedtest-cli files from git
+    file: 
+      path: /tmp/test
+      state: directory
+
+  - name: Get speedtest-cli from git
+    git:
+      repo: https://github.com/sivel/speedtest-cli.git 
+      dest: /tmp/test/
+
+  - name: Change to speedtest-cli directory and install it
+    command: python3 setup.py install 
+    args:
+      chdir: /tmp/test/
+
+  - name: run speedtest-cli and write to file
+    shell: speedtest-cli > speedtest.txt 
+    args:
+      chdir: "/root/SYSTEM/"
+
+  tags:
+    - anonymity
+    - speedtest

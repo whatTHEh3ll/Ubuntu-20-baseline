@@ -1,0 +1,118 @@
+---
+
+- name: create /root/SYSTEM/suricata directory
+  file:
+    path: /root/SYSTEM/suricata 
+    state: directory
+    force: yes 
+
+- name: add surcicata debian repo from Open Information Security Foundation (OISF)
+  apt_repository:
+    repo: ppa:oisf/suricata-stable
+    state: present
+
+- name: install suricata 
+  apt: 
+    name: suricata
+    state: latest 
+
+- name: copy configs/suricata.yaml to /root/SYSTEM/suricata/suricata.yaml
+  copy: 
+    src: configs/suricata.yaml
+    dest: /root/SYSTEM/suricata/suricata.yaml
+    force: yes 
+
+- name: get default interface
+  debug:
+    msg: "{{ ansible_default_ipv4.interface }}"
+
+- name: change default interface for /root/SYSTEM/suricata/suricata.yaml
+  replace:
+    path: /root/SYSTEM/suricata/suricata.yaml
+    after: 'af-packet:'
+    regexp: '- interface: myinterface'
+    replace: "- interface: {{ ansible_default_ipv4.interface }}"
+   
+- name: copy /root/SYSTEM/suricata/suricata.yaml to /etc/suricata/suricata.yaml
+  copy:
+    src: /root/SYSTEM/suricata/suricata.yaml
+    dest: /etc/suricata/suricata.yaml
+    force: yes
+    remote_src: true 
+    owner: root
+    group: root
+    mode: 0644
+
+- name:  notify Suricata process to update rules without restarting
+  shell: kill -usr2 $(pidof suricata)
+ 
+- name: update Suricata rules
+  shell: suricata-update
+  register: suricata_update
+
+- name: show Suricata update with debug
+  debug:
+    msg: "{{ suricata_update.stdout_lines }}"
+
+- name: run suricata-update list-sources
+  shell: suricata-update list-sources
+  register: securita_src
+
+- name: show results of suricata-update list-sources
+  debug:
+    msg: "{{ securita_src.stdout_lines }}"
+
+- name: fetch and include (enable-source) the et/open rulesets
+  shell: suricata-update enable-source et/open
+  register: securita_sets
+
+- name: display securita_sets 
+  debug:
+    msg: "{{ securita_sets.stdout_lines }}"
+
+- name: run securita update a second time 
+  shell: suricata-update
+  register: suricata_update_second
+
+- name: show results of second securita update
+  debug:
+    msg: "{{ suricata_update_second.stdout_lines }}"
+
+- name: Validating the Suricata Configuration
+  shell: suricata -T -c /etc/suricata/suricata.yaml -v
+  register: securita_validate
+
+- name: show securita validation
+  debug:
+    msg: "{{ securita_validate.stdout_lines }}"
+
+- name: test suricata with http://testmynids.org/uid/index.html
+  uri:
+    url: http://testmynids.org/uid/index.html
+    return_content: true
+    validate_certs: true
+  register: test_my_ids
+
+- name: show results of test_my_ids  
+  debug:
+    msg: "{{ test_my_ids }}"
+
+- name: write surcata outputs to file 
+  copy:
+    content: "{{ item.content}}"
+    dest: "{{ item.dest }}" 
+  with_items:
+    - { content: '{{ suricata_update.stdout_lines }}', dest: '/root/SYSTEM/suricata/first-update.json' }
+    - { content: '{{ securita_src.stdout_lines }}', dest: '/root/SYSTEM/suricata/sources.json' }
+    - { content: '{{ securita_sets.stdout_lines }}', dest: '/root/SYSTEM/suricata/sets.json'}
+    - { content: '{{ suricata_update_second.stdout_lines }}', dest: '/root/SYSTEM/suricata/second-update.json' }
+    - { content: '{{ securita_validate.stdout_lines }}', dest: '/root/SYSTEM/suricata/validate.json' }
+    - { content: '{{ test_my_ids }}', dest: '/root/SYSTEM/suricata/test_my_ids.json' }
+
+  
+
+
+
+
+
+

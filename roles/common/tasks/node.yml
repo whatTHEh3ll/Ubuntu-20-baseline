@@ -1,0 +1,100 @@
+---
+- block:
+
+  - name: 'node : download setup script'
+    get_url:
+      url: https://deb.nodesource.com/setup_16x
+      dest: /home/{{ user_name }}/node_setup.sh
+
+  - name: 'node : execute PPA setup script'
+    shell: bash node_setup.sh
+    args:
+      chdir: /home/{{ user_name }}/
+
+  - name: 'node : install Node'
+    apt:
+      name: nodejs
+      state: present
+      update_cache: yes
+
+  - name: 'node : import Yarn APT key'
+    apt_key:
+      state: present
+      url: https://dl.yarnpkg.com/debian/pubkey.gpg
+
+  - name: 'node : setup Yarn PPA'
+    apt_repository:
+      repo: deb https://dl.yarnpkg.com/debian/ stable main
+      state: present
+      filename: yarn
+      update_cache: yes
+
+  - name: 'node : install Yarn'
+    apt:
+      name: yarn
+      state: present
+
+  - name: 'node : cleanup temp files'
+    file:
+      path: /home/{{ user_name }}/node_setup.sh
+      state: absent
+
+  - name: make npm global directory
+    become: yes
+    become_user: "{{ user_name }}"
+    shell:  mkdir ~/.npm-global
+    args:
+      chdir: /home/{{ user_name }}
+
+  - name: make npm global with "npm config set prefix '~/.npm-global" command
+    become: yes
+    become_user: "{{ user_name }}"
+    shell: npm config set prefix '~/.npm-global'
+    args:
+      chdir: /home/{{ user_name }}
+
+  - name: add npm-global path to ~/.profile
+    become: yes
+    become_user: "{{ user_name }}"
+    blockinfile:
+      path: /home/{{ user_name }}/.profile
+      marker: "# npm global from ansible blockinfile"
+      block: |
+        export PATH=~/.npm-global/bin:$PATH
+      
+  - name: source ~/.profile to make npm global
+    become: yes
+    become_user: "{{ user_name }}"
+    shell: '/bin/bash -lc "source ~/.profile"'
+    args:
+      chdir: /home/{{ user_name }}
+
+  - name: get node path 
+    shell: "which node"
+    register: "node_path"
+    # changed_when: False
+    # check_mode: False
+
+  - name: show node path"
+    debug:
+      msg: "{{ node_path.stdout }}"
+
+  - name: set fact for node_path 
+    set_fact:
+      node: "{{ node_path.stdout }}"
+      chacheable: yes 
+
+  - name: show fact for node path
+    debug:
+      msg: "{{ node }}"
+
+  - name: get node version
+    become: yes 
+    become_user: "{{ user_name }}"
+    shell: '"{{ node | quote }}" -v > node-version.txt'
+    args:
+      chdir: /home/{{ user_name }}/{{ directory }}
+    
+  tags:
+    - common
+    - node

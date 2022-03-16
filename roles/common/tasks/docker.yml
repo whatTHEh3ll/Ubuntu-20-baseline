@@ -1,0 +1,143 @@
+---
+
+- name: install and configure docker 
+
+  block:
+
+  - name: create /root/SYSTEM/docker directory
+    file:
+      path: /root/SYSTEM/docker 
+      state: directory
+      force: yes
+
+  - name: install docker dependacies in case there not installed
+    apt:
+      name: 
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - gnupg-agent
+        - ctop 
+      state: present
+      update_cache: true
+
+  - name: 'docker : Add Docker apt key'
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+      state: present
+    ignore_errors: true
+
+  - name: 'docker : Add Docker repo'
+    apt_repository:
+      repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable" 
+      update_cache: yes
+
+  - name: Update apt-get repo and cache
+    apt:
+      update_cache: yes
+
+  - name: 'docker : Install Docker apt package'
+    apt:
+      name: 
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+      state: latest
+      update_cache: yes
+    
+  - name: 'docker : Ensure Docker service is installed and restarted'
+    service:
+      name: docker
+      state: restarted
+      enabled: yes
+
+  - name: 'docker : add non root user to docker group.'
+    user:
+      name: "{{ user_name }}"
+      groups: docker
+      append: yes
+
+  - name: Download docker-compose 
+    get_url:
+      url : https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
+      dest: /home/{{ user_name }}/docker-compose
+      mode: '+x'
+
+  - name: Check docker-compose exists
+    stat: path=/home/{{ user_name }}/docker-compose
+    register: docker_compose
+
+  - name: Move docker-compose to /usr/local/bin/docker-compose
+    command: mv /home/{{ user_name }}/docker-compose /usr/local/bin/docker-compose
+    when: docker_compose.stat.exists
+
+  - name: copy daemon.json file to /etc/docker/daemon.json
+    copy:
+      src: configs/daemon.json
+      dest: /etc/docker/daemon.json
+      force: yes
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: create /etc/systemd/system/docker.service.d/ directory for configs/override.conf
+    file:
+      path: "/etc/systemd/system/docker.service.d"
+      state: directory
+      force: yes 
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: copy override.conf to /etc/systemd/system/docker.service.d/override.conf 
+    copy:
+      src: configs/override.conf
+      dest: /etc/systemd/system/docker.service.d/override.conf 
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: restart docker docker daemon after changes to daemon.json
+    systemd:
+      state: restarted
+      daemon_reload: yes
+      name: docker
+
+  - name: enable docker with systemd after daemon changes
+    systemd:
+      name: docker 
+      enabled: yes 
+
+  - name: clone docker-bench-security
+    git:
+      repo: https://github.com/docker/docker-bench-security.git
+      dest: /root/docker-bench-security
+
+  - name: run docker docker-bench-security scan BEFORE applying Auditd rules 
+    shell: ./docker-bench-security.sh -b
+    args:
+      chdir: /root/docker-bench-security
+
+  - name: copy /root/docker-bench-security/logs to /root/SYSTEM/docker BEFORE applying Auditd rules 
+    copy: 
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      remote_src: yes 
+      force: yes 
+    with_items:
+      - {src: '/root/docker-bench-security/log/docker-bench-security.log', dest: '/root/SYSTEM/docker/docker-bench-noAuditd.log'}
+      - {src: '/root/docker-bench-security/log/docker-bench-security.log.json', dest: '/root/SYSTEM/docker/docker-bench-noAuditd.log.json'}
+    
+  - name: remove docker-bench-security.log and docker-bench-security.log.json BEFORE applying Auditd rules 
+    file:
+      path: "{{ item }}"
+      state: absent 
+    with_items:
+      - /root/docker-bench-security/log/docker-bench-security.log
+      - /root/docker-bench-security/log/docker-bench-security.log.json
+
+  tags:
+    - common
+    - docker 

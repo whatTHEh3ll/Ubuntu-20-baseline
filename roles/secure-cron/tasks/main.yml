@@ -1,0 +1,28 @@
+---
+    
+- name: allow root for cron, disable anacron and remove at 
+  script: secure-cron.sh
+
+- name: Set User/Group Owner and Permission on cron
+  shell: "{{ item }}"
+  args:
+    warn: no
+  with_items:
+    -  chown root:root /etc/crontab
+    -  chmod og-rwx /etc/crontab
+    -  chown root:root /etc/cron.hourly
+    -  chmod og-rwx /etc/cron.hourly
+    -  chown root:root /etc/cron.daily
+    -  chmod og-rwx /etc/cron.daily
+    -  chown root:root /etc/cron.weekly
+    -  chmod og-rwx /etc/cron.weekly
+    -  chown root:root /etc/cron.monthly
+    -  chmod og-rwx /etc/cron.monthly
+    -  chown root:root /etc/cron.d
+    -  chmod og-rwx /etc/cron.d
+  
+- name: restart cron with systemd 
+  service:
+    name: cron  
+    state: restarted
+    enabled: yes
